@@ -4,6 +4,7 @@ require('dotenv').config();
 const cors = require('cors');
 
 const { connection } = require("./config/db");
+const { userRouter } = require('./routes/user.routes');
 
 const app = express();
 app.use(express.json());
@@ -14,6 +15,9 @@ app.get('/', (req, res) => {
     res.status(200).send("Welcome To TaskManagement API.")
 })
 
+
+
+app.use("/api/v1/user", userRouter);
 
 app.all('*', (req, res) => {
     return res.status(404).send({
