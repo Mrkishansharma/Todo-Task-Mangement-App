@@ -8,3 +8,6 @@
 2023-10-08T12:53:30.758Z -url GET /tasks - Status: 200, Content Length: 0 bytes
 2023-10-08T12:53:32.348Z -url GET /tasks - Status: 200, Content Length: 0 bytes
 2023-10-08T12:53:34.477Z -url GET /tasks - Status: 200, Content Length: 0 bytes
+2023-10-08T13:16:34.820Z -url GET /user/regis - Status: 200, Content Length: 0 bytes
+2023-10-08T13:16:43.679Z -url POST /user/register - Status: 200, Content Length: 0 bytes
+2023-10-08T13:44:55.896Z -url POST /user/logout - Status: 200, Content Length: 0 bytes
