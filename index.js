@@ -12,7 +12,7 @@ app.use(cors())
 
 
 app.get('/', (req, res) => {
-    res.status(200).send("Welcome To TaskManagement API.")
+    res.status(200).send({ message: "Welcome To TaskManagement API." })
 })
 
 
