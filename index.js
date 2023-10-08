@@ -6,6 +6,8 @@ const cors = require('cors');
 const { connection } = require("./config/db");
 const { userRouter } = require('./routes/user.routes');
 const { taskRouter } = require('./routes/todo.routes');
+const { rateLimiting } = require('./utils/ratelimiter');
+const { logger } = require('./utils/logger');
 
 const app = express();
 app.use(express.json());
@@ -16,6 +18,11 @@ app.get('/', (req, res) => {
     res.status(200).send({ message: "Welcome To TaskManagement API." })
 })
 
+// rate limiting middleware
+app.use(rateLimiting);
+
+// logging middleware
+app.use(logger);
 
 
 // Routers
