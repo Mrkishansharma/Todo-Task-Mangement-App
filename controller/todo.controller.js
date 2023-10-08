@@ -42,7 +42,7 @@ const getTaskById = async (req, res) => {
 
         const todo = await TodoModel.findById({ _id: new mongoose.Types.ObjectId(id) }).populate("userId");
 
-        if (todo.userId._id == userId) {
+        if (todo?.userId?._id == userId) {
 
             return res.status(200).send({ data: todo });
         } else {

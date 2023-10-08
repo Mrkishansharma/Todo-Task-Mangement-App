@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config()
 
 const { UserModel } = require("../model/user.model");
+const {TodoModel} = require("../model/todo.model")
 const { isValidEmail, isPasswordValid, isNameValid } = require('./validation');
 
 
@@ -19,6 +20,10 @@ async function verifyUser(email) {
 const registerUser = async (req, res) => {
 
     let { email, name, password } = req.body;
+
+    if(!email || !name || !password) {
+        return res.status(400).send({ "error": "Please provide all the details" });
+    }
 
     name = name.trim();
     email = email.trim();
@@ -38,21 +43,19 @@ const registerUser = async (req, res) => {
         return res.status(201).send({ "message": "User Already Exists" });
     }
 
-    bcrypt.hash(password, 6, async (err, hash) => {
-        try {
+    password = await bcrypt.hash(password, 10);
 
-            const newUser = new UserModel({ email, name, password: hash });
-            await newUser.save();
+    try {
+        const newUser = new UserModel({ email, name, password });
+        await newUser.save();
 
-            return res.status(201).send({
-                "message": "Your account has been created successfully!",
-                "User": newUser
-            });
-
-        } catch (error) {
-            return res.status(500).send({ "error": error.message });
-        }
-    });
+        return res.status(201).send({
+            "message": "Your account has been created successfully!",
+            "User": newUser
+        });
+    }catch{
+        return res.status(500).send({ "error": error.message });
+    }
 }
 
 
@@ -60,31 +63,44 @@ const loginUser = async (req, res) => {
 
     let { email, password } = req.body;
 
-    email = email.trim();
-    password = password.trim();
+    if(!email || !password) {
+        return res.status(400).send({ "error": "Please provide credentials." });
+    }
 
     try {
 
+        email = email.trim();
+        password = password.trim();
+
         if (!isValidEmail(email)) {
             return res.status(400).send({ "error": "Invalid Email Address" });
+        }
+
+        if(!password){
+            return res.status(400).send({
+                "error": "Password cannot be empty"
+            })
         }
 
         const user = await verifyUser(email);
 
         if (user) {
 
-            bcrypt.compare(password, user.password, (err, result) => {
-                if (err) {
-                    return res.status(400).send({
-                        "error": "Invaid Password"
-                    });
-                } else {
-                    return res.status(200).send({
-                        "message": "Login Successfully",
-                        "token": jwt.sign({ userId: user._id }, process.env.SecretKey, { expiresIn: '24h' })
-                    });
-                }
+            const isValidPassword = bcrypt.compareSync(password, user.password);
+
+            if (!isValidPassword) {
+                return res.status(400).send({
+                    "error": "Invaid Password"
+                });
+            }
+
+            const token = jwt.sign({ userId: user._id }, process.env.SecretKey, { expiresIn: '24h' });
+
+            return res.status(200).send({
+                "message": "Login Successfully",
+                "token": token
             })
+
         } else {
 
             return res.status(404).send({
@@ -119,6 +135,14 @@ const getUserDetails = async (req, res) => {
 
 const updateUserDetails = async (req, res) => {
     const { userId } = req.body;
+
+    if(req.body.password){
+        if (!isPasswordValid(req.body.password)) {
+            return res.status(400).send({ "error": "Password Must be Strong that contains one lowercase, one uppercase, one special character , one number and minimum 8 characters" });
+        }
+        req.body.password = bcrypt.hashSync(req.body.password, 6);
+    }
+
     try {
         const userData = await UserModel.findById({ _id: userId });
 
