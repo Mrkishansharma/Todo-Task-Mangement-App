@@ -6,6 +6,16 @@ require('dotenv').config()
 const { UserModel } = require("../model/user.model");
 const { isValidEmail, isPasswordValid, isNameValid } = require('./validation');
 
+
+
+async function verifyUser(email) {
+    try {
+        return await UserModel.findOne({ email });
+    } catch (error) {
+        return null
+    }
+}
+
 const registerUser = async (req, res) => {
 
     let { email, name, password } = req.body;
@@ -90,16 +100,79 @@ const loginUser = async (req, res) => {
 }
 
 
-async function verifyUser(email) {
+const getUserDetails = async (req, res) => {
+    const { userId } = req.body;
     try {
-        return await UserModel.findOne({ email });
+        const user = await UserModel.findById({ _id: userId });
+
+        if (user) {
+            return res.status(200).send({ data: user });
+        } else {
+            return res.status(404).send({ "message": "User Not Found." })
+        }
     } catch (error) {
-        return null
+
+        return res.status(500).send({ "error": error.message })
+    }
+}
+
+
+const updateUserDetails = async (req, res) => {
+    const { userId } = req.body;
+    try {
+        const userData = await UserModel.findById({ _id: userId });
+
+        if (userData) {
+            await UserModel.findByIdAndUpdate({ _id: userId }, { ...req.body });
+            const user = await UserModel.findOne({ _id: userId });
+
+            return res.status(200).send({
+                "message": "User Details Has been Updated Successfully",
+                "user": user
+            });
+        } else {
+            return res.status(404).send({
+                "message": "User Not Found"
+            })
+        }
+    } catch (error) {
+
+        return res.status(500).send({ "error": error.message });
+    }
+}
+
+
+const deleteUserAccount = async (req, res) => {
+    const { userId } = req.body;
+    try {
+
+        const userData = await UserModel.findById({ _id: userId });
+
+        if (userData) {
+
+            await UserModel.findByIdAndDelete({ _id: userId });
+            await TodoModel.deleteMany({ userId });
+
+            return res.status(200).send({
+                "message": `User Account Deleted Successfully`
+            });
+        } else {
+
+            return res.status(404).send({
+                "message": "User Not Found"
+            })
+        }
+    } catch (error) {
+
+        return res.status(500).send({ "error": error.message })
     }
 }
 
 
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    getUserDetails,
+    updateUserDetails,
+    deleteUserAccount
 }
