@@ -6,6 +6,7 @@ require('dotenv').config()
 const { UserModel } = require("../model/user.model");
 const {TodoModel} = require("../model/todo.model")
 const { isValidEmail, isPasswordValid, isNameValid } = require('./validation');
+const { BlacklistModel } = require('../model/blacklist.model');
 
 
 
@@ -192,12 +193,42 @@ const deleteUserAccount = async (req, res) => {
     }
 }
 
+const logoutUser = async (req, res) => {
+    if (!req.headers['authorization']) {
+        return res.status(404).send({
+            "message": "JWT Token Not Found !"
+        })
+    }
 
+    const token = req.headers['authorization'].split(' ')[1];
+
+    if (token) {
+        try{
+            const data = new BlacklistModel({ token });
+            await data.save();
+
+            return res.status(200).send({
+                "message": "Logout Successfully"
+            });
+
+        }catch{
+            return res.status(500).send({
+                "error": error.message
+            })
+        }
+    }else{
+        return res.status(404).send({
+            "message": "JWT Token Not Found !"
+        })
+    }
+
+}
 
 module.exports = {
     registerUser,
     loginUser,
     getUserDetails,
     updateUserDetails,
-    deleteUserAccount
+    deleteUserAccount,
+    logoutUser
 }
