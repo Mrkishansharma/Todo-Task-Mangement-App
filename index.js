@@ -5,10 +5,11 @@ const cors = require('cors');
 
 const { connection } = require("./config/db");
 const { userRouter } = require('./routes/user.routes');
+const { taskRouter } = require('./routes/todo.routes');
 
 const app = express();
 app.use(express.json());
-app.use(cors())
+app.use(cors());
 
 
 app.get('/', (req, res) => {
@@ -17,13 +18,21 @@ app.get('/', (req, res) => {
 
 
 
-app.use("/api/v1/user", userRouter);
+// Routers
+
+app.use("/user", userRouter);
+
+app.use("/tasks", taskRouter);
+
+
+
 
 app.all('*', (req, res) => {
     return res.status(404).send({
         "error": "404! Route Not Found"
     })
 })
+
 
 app.listen(process.env.port, async () => {
     try {

@@ -3,7 +3,8 @@ const { Router } = require('express');
 
 const userRouter = Router();
 
-const { registerUser, loginUser, getUserDetails, updateUserDetails, deleteUserAccount } = require('../controller/user.controller')
+const { registerUser, loginUser, getUserDetails, updateUserDetails, deleteUserAccount } = require('../controller/user.controller');
+const { auth } = require('../middleware/auth.middleware');
 
 
 // create user account
@@ -13,7 +14,7 @@ userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
 
 
-// Protected Routes 
+// Protected Routes are accessible only after login
 
 
 // get user details by jwt token
